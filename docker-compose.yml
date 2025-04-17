@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  goldapp:
+    build: .
+    container_name: gold_flask_app
+    ports:
+      - "5000:5051"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=development

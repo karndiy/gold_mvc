@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><title>Gold Prices</title></head>
+<body>
+  <h1>Gold Prices</h1>
+  <ul>
+    {% for item in data %}
+      <li>{{ item.asdate }} - Buy: {{ item.blbuy }} / Sell: {{ item.blsell }}</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

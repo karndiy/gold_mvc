@@ -1,5 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
+import json
+
+def xnowtime():
+    dt = datetime.now()
+    return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+def save_to_json(data, filepath):
+    with open(filepath, "w") as outfile:
+        json.dump(data, outfile)
+
 
 def scrape_gold_data(url='https://www.goldtraders.or.th/UpdatePriceList.aspx'):
     res = requests.get(url)
@@ -28,3 +39,26 @@ def scrape_gold_data(url='https://www.goldtraders.or.th/UpdatePriceList.aspx'):
     data.reverse()
     print(data)
     return data
+
+def send_api():
+     url = 'https://karndiy.pythonanywhere.com/cjson/goldjson-v2'
+     res = requests.get(url)
+
+def cjson_pythonanywhere():
+    vdata = []
+    url = 'https://karndiy.pythonanywhere.com/cjson/goldjson-v2'
+    data = scrape_gold_data()
+    vdata = data
+
+    # Data to be sent in the POST request
+    #data = {'key': 'value', 'another_key': 'another_value', 'v2': 'data2','time':gettime()}
+
+    # Send a POST request to the Flask server
+    response = requests.post(url, json=vdata )
+
+    # Check the response from the server
+    if response.status_code == 201:
+        print('JSON file created successfully!')
+    else:
+        print('Error creating JSON file')
+        print(response.json())  # Print the error message from the server, if any        

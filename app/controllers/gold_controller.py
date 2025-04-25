@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template
-from app.scraper.gold_scraper import scrape_gold_data
+from app.scraper.gold_scraper import scrape_gold_data,cjson_pythonanywhere
 from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate
 
 gold_bp = Blueprint('gold', __name__)
@@ -36,6 +36,14 @@ def api_latest_asdate():
         return jsonify(gold.to_dict())
     else:
         return jsonify({'message': 'No gold price data found'}), 404
+    
+@gold_bp.route('/api/sendjson', methods=['GET', 'POST'])
+def api_senddata():
+    data =  cjson_pythonanywhere()
+    if data:
+        return jsonify(data)
+    else:
+        return jsonify({'message': 'Not Save data json'}), 404
 
 
 

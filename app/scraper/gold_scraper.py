@@ -1,64 +1,79 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate
 import json
 
+# ฟังก์ชันสำหรับคืนค่าเวลาปัจจุบันในรูปแบบ string
 def xnowtime():
-    dt = datetime.now()
-    return dt.strftime('%Y-%m-%d %H:%M:%S')
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
+# ฟังก์ชันบันทึกข้อมูลเป็น JSON ไฟล์
 def save_to_json(data, filepath):
-    with open(filepath, "w") as outfile:
-        json.dump(data, outfile)
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
-
+# ฟังก์ชันดึงข้อมูลราคาทองคำจากเว็บไซต์
 def scrape_gold_data(url='https://www.goldtraders.or.th/UpdatePriceList.aspx'):
-    res = requests.get(url)
-    res.encoding = "utf-8"
-    soup = BeautifulSoup(res.text, 'html.parser')
+    try:
+        res = requests.get(url, timeout=10)
+        res.encoding = "utf-8"
+        soup = BeautifulSoup(res.text, 'html.parser')
 
-    table = soup.find("table", {"id": "DetailPlace_MainGridView"})
-    if table is None:
+        table = soup.find("table", {"id": "DetailPlace_MainGridView"})
+        if not table:
+            return []
+
+        data = []
+        for row in table.find_all("tr")[1:]:  # ข้ามหัวตาราง
+            cols = row.find_all("td")
+            if len(cols) == 9:
+                data.append({
+                    'asdate': cols[0].get_text(strip=True),
+                    'nqy': cols[1].get_text(strip=True),
+                    'blbuy': cols[2].get_text(strip=True),
+                    'blsell': cols[3].get_text(strip=True),
+                    'ombuy': cols[4].get_text(strip=True),
+                    'omsell': cols[5].get_text(strip=True),
+                    'goldspot': cols[6].get_text(strip=True),
+                    'bahtusd': cols[7].get_text(strip=True),
+                    'diff': cols[8].get_text(strip=True),
+                })
+        # กลับลำดับล่าสุดไปเก่าสุด
+        # บันทึกลงฐานข้อมูลเฉพาะรายการใหม่
+        inserted = insert_gold_data(data[::-1])  # กลับลำดับเพื่อให้เรียงจากเก่าไปใหม่
+
+        print(f"[{xnowtime()}] ✅ บันทึกข้อมูล {len(inserted)} รายการใหม่แล้ว")
+        return inserted
+    except Exception as e:
+        print(f"[{xnowtime()}] Error while scraping: {e}")
         return []
 
-    data = []
-    for idx, row in enumerate(table.findAll("tr")[1:]):
-        columns = row.findAll("td")
-        if len(columns) == 9:
-            data.append({
-                'asdate': columns[0].text.strip(),
-                'nqy': columns[1].text.strip(),
-                'blbuy': columns[2].text.strip(),
-                'blsell': columns[3].text.strip(),
-                'ombuy': columns[4].text.strip(),
-                'omsell': columns[5].text.strip(),
-                'goldspot': columns[6].text.strip(),
-                'bahtusd': columns[7].text.strip(),
-                'diff': columns[8].text.strip()
-            })
-    data.reverse()
-    print(data)
-    return data
-
+# ฟังก์ชันสำหรับทดสอบ GET API (ไม่จำเป็นเท่าไหร่ถ้าไม่มีการใช้งานผลลัพธ์)
 def send_api():
-     url = 'https://karndiy.pythonanywhere.com/cjson/goldjson-v2'
-     res = requests.get(url)
+    try:
+        res = requests.get('https://karndiy.pythonanywhere.com/cjson/goldjson-v2', timeout=5)
+        print(f"[{xnowtime()}] API GET status: {res.status_code}")
+    except Exception as e:
+        print(f"[{xnowtime()}] Error during GET request: {e}")
 
+# ฟังก์ชันหลักสำหรับดึงข้อมูลราคาทอง และส่ง POST ไปยัง API
 def cjson_pythonanywhere():
-    vdata = []
     url = 'https://karndiy.pythonanywhere.com/cjson/goldjson-v2'
     data = scrape_gold_data()
-    vdata = data
 
-    # Data to be sent in the POST request
-    #data = {'key': 'value', 'another_key': 'another_value', 'v2': 'data2','time':gettime()}
+    if not data:
+        print("No data scraped, aborting POST request.")
+        return "No data scraped."
 
-    # Send a POST request to the Flask server
-    response = requests.post(url, json=vdata )
-
-    # Check the response from the server
-    if response.status_code == 201:
-        print('JSON file created successfully!')
-    else:
-        print('Error creating JSON file')
-        print(response.json())  # Print the error message from the server, if any        
+    try:
+        response = requests.post(url, json=data, timeout=10)
+        if response.status_code == 201:
+            print("✅ JSON file created successfully!")
+            return 'JSON file created successfully!'
+        else:
+            print("❌ Error creating JSON file:", response.text)
+            return response.json()
+    except Exception as e:
+        print(f"[{xnowtime()}] Error during POST request: {e}")
+        return str(e)

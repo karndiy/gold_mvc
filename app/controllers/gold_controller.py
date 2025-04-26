@@ -6,12 +6,16 @@ gold_bp = Blueprint('gold', __name__)
 
 @gold_bp.route('/')
 def home():
-    data = get_all_gold()
-    return render_template('index.html', data=data)
+    #data = get_all_gold()
+    latest = get_latest_asdate()
+    print(latest)
+    #return render_template('index.html', data=data)
+    return render_template('index.html', data=[latest])  # ห่อเป็น list
 
 @gold_bp.route('/scrape', methods=['GET'])
 def scrape():
     data = scrape_gold_data()
+    
     if not data:
         return jsonify({'error': 'Failed to scrape data'}), 500
 
@@ -41,7 +45,7 @@ def api_latest_asdate():
 def api_senddata():
     data =  cjson_pythonanywhere()
     if data:
-        return jsonify(data)
+        return jsonify(data),200
     else:
         return jsonify({'message': 'Not Save data json'}), 404
 

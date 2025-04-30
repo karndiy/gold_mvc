@@ -42,6 +42,7 @@ def scrape_gold_data(url='https://www.goldtraders.or.th/UpdatePriceList.aspx'):
         # กลับลำดับล่าสุดไปเก่าสุด
         # บันทึกลงฐานข้อมูลเฉพาะรายการใหม่
         inserted = insert_gold_data(data[::-1])  # กลับลำดับเพื่อให้เรียงจากเก่าไปใหม่
+        print(data)
 
         print(f"[{xnowtime()}] ✅ บันทึกข้อมูล {len(inserted)} รายการใหม่แล้ว")
         return inserted

@@ -1,22 +1,17 @@
-# Use official Python image
-FROM python:3.12-slim
+# Use official Python base image
+FROM python:3.10
 
 # Set working directory
 WORKDIR /app
 
 # Copy project files
-COPY . .
+COPY . /app
 
 # Install dependencies
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Set Flask environment variables
-ENV FLASK_APP=run.py
-ENV FLASK_RUN_HOST=0.0.0.0
+# Expose port (Flask default is 5000, but gunicorn uses 8000)
+EXPOSE 8000
 
-# Expose port
-EXPOSE 5000
-
-# Run the app
-CMD ["flask", "run"]
+# Run using gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "run:app"]

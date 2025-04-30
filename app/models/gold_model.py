@@ -48,7 +48,10 @@ def insert_gold_data(data):
     return inserted
 
 def get_all_gold():
-    return GoldPrice.query.order_by(GoldPrice.id.desc()).all()
+    return GoldPrice.query.order_by(GoldPrice.id.desc()).limit(5).all()
+
+def get_limit_gold(limits = 10):
+    return GoldPrice.query.order_by(GoldPrice.id.desc()).limit(limits).all()
 
 
 

@@ -1,14 +1,14 @@
 from flask import Blueprint, jsonify, request, render_template
 from app.scraper.gold_scraper import scrape_gold_data,cjson_pythonanywhere
-from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate
+from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate,get_limit_gold
 
 gold_bp = Blueprint('gold', __name__)
 
 @gold_bp.route('/')
 def home():
     #data = get_all_gold()
-    latest = get_latest_asdate()
-    #print(latest)
+    latest =   get_latest_asdate()
+    print(latest)
     #return render_template('index.html', data=data)
     return render_template('index.html', data=[latest])  # ห่อเป็น list
 
@@ -21,6 +21,21 @@ def homeall():
     data = get_all_gold()
     return render_template('index.html', data=data)
     #return render_template('index.html', data=[latest])  # ห่อเป็น list
+
+
+@gold_bp.route('/goldlimit')
+@gold_bp.route('/goldlimit/<int:limits>')
+def getgold_limit(limits=None):
+    try:
+        # Use default limit if not provided or invalid
+        limits = int(limits) if limits is not None else 10
+    except ValueError:
+        limits = 10
+
+    data = get_limit_gold(limits)
+    return render_template('index.html', data=data)
+
+
 
 @gold_bp.route('/scrape', methods=['GET'])
 def scrape():

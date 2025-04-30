@@ -13,7 +13,7 @@ def home():
     return render_template('index.html', data=[latest])  # ห่อเป็น list
 
 @gold_bp.route('/all')
-def home():
+def homeall():
     
     #latest = get_latest_asdate()
     #print(latest)

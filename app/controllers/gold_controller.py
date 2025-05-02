@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template
+import traceback
 from app.scraper.gold_scraper import scrape_gold_data,cjson_pythonanywhere
 from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate,get_limit_gold
 
@@ -37,21 +38,40 @@ def getgold_limit(limits=None):
 
 
 
+# @gold_bp.route('/scrape', methods=['GET'])
+# def scrape():
+#     data = scrape_gold_data()
+    
+#     if not data:
+#         return jsonify({'error': 'Failed to scrape data'}), 500
+
+#     inserted = insert_gold_data(data)
+#     if inserted:
+#         return jsonify({
+#             'message': f'{len(inserted)} new records inserted.',
+#             'data': inserted
+#         }), 201
+#     else:
+#         return jsonify({'message': 'No new data to insert.'}), 200
+
+
 @gold_bp.route('/scrape', methods=['GET'])
 def scrape():
-    data = scrape_gold_data()
-    
-    if not data:
-        return jsonify({'error': 'Failed to scrape data'}), 500
+    try:
+        inserted = scrape_gold_data()  # This already inserts and returns inserted data
+        if not inserted:
+            return jsonify({'message': 'No new data to insert.'}), 200
 
-    inserted = insert_gold_data(data)
-    if inserted:
         return jsonify({
             'message': f'{len(inserted)} new records inserted.',
             'data': inserted
         }), 201
-    else:
-        return jsonify({'message': 'No new data to insert.'}), 200
+    except Exception as e:
+       
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
 
 @gold_bp.route('/api/gold', methods=['GET'])
 def api_gold():

@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from app.models.gold_model import insert_gold_data, get_all_gold, get_latest_asdate
 import json
+import traceback
 
 # ฟังก์ชันสำหรับคืนค่าเวลาปัจจุบันในรูปแบบ string
 def xnowtime():
@@ -47,8 +48,9 @@ def scrape_gold_data(url='https://www.goldtraders.or.th/UpdatePriceList.aspx'):
         print(f"[{xnowtime()}] ✅ บันทึกข้อมูล {len(inserted)} รายการใหม่แล้ว")
         return inserted
     except Exception as e:
-        print(f"[{xnowtime()}] Error while scraping: {e}")
-        return []
+            print(f"[{xnowtime()}] Error while scraping: {e}")
+            traceback.print_exc()
+            return []
 
 # ฟังก์ชันสำหรับทดสอบ GET API (ไม่จำเป็นเท่าไหร่ถ้าไม่มีการใช้งานผลลัพธ์)
 def send_api():

@@ -9,7 +9,7 @@ gold_bp = Blueprint('gold', __name__)
 def home():
     #data = get_all_gold()
     latest =   get_latest_asdate()
-    print(latest)
+    #print(latest)
     #return render_template('index.html', data=data)
     return render_template('index.html', data=[latest])  # ห่อเป็น list
 

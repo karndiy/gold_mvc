@@ -56,4 +56,4 @@ def get_limit_gold(limits = 10):
 
 
 def get_latest_asdate():
-    return GoldPrice.query.order_by(GoldPrice.asdate.desc()).first()
+    return GoldPrice.query.order_by(GoldPrice.id.desc()).first()
